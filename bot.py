@@ -7,7 +7,6 @@ from aiogram.filters import CommandStart
 from dotenv import load_dotenv
 
 from database.database import create_tables
-from database.orm_query import add_user
 from handlers.admin_router import admin_router
 from handlers.user_router import user_router
 
@@ -19,9 +18,6 @@ logging.basicConfig(level=logging.INFO)
 
 # Получаем токен бота из переменных окружения
 bot_token = os.getenv("BOT_TOKEN")
-if not bot_token:
-    print("Ошибка: Токен бота не найден. Убедитесь, что вы создали .env файл с BOT_TOKEN.")
-    exit()
 
 # Инициализируем бота и диспетчер
 bot = Bot(token=bot_token)
@@ -30,9 +26,6 @@ dp = Dispatcher()
 # Подключаем роутеры
 dp.include_router(admin_router)
 dp.include_router(user_router)
-
-
-# Обработчик команды /start - УДАЛЕН, ТАК КАК ПЕРЕНЕСЕН В USER_ROUTER
 
 
 async def main():

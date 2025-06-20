@@ -66,7 +66,7 @@ async def create_tables():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
                 product_id INTEGER NOT NULL,
-                quantity INTEGER MOT NULL DEFOULT 1,
+                quantity INTEGER MOT NULL DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
                 FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
