@@ -54,7 +54,7 @@ async def create_tables():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
                 price REAL NOT NULL,
-                description TEXT,
+                discription TEXT,
                 image TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )

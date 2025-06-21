@@ -24,7 +24,70 @@ async def add_user(telegram_id:int, username:str|None=None):
 # Это идеальный способ добавить 
 # пользователя, не проверяя заранее, есть ли он уже в базе.
 
+async def add_product(data: dict):
+    """
+    Асинхронно добавляет новый товар в таблицу products.
+    """
+    async with sq.connect('shop.db') as db:
+        cursor = await db.cursor()
+        await cursor.execute(
+            "INSERT INTO products (name, discription, price, image) VALUES (?,?,?,?)",
+            (data['name'], data['discription'], data['price'], data['image'])
+        )
+        await db.commit()
+        print(f"Товар {data['name']} добавлен в базу данных")
 
 
+async def get_products():
+    """
+    Асинхронно получает все товары из таблицы products.
+    """
+    async with sq.connect('shop.db') as db:
+        cursor = await db.cursor()
+        await cursor.execute("SELECT * FROM products")
+        return await cursor.fetchall()
 
+async def add_to_cart(user_telegram_id: int, product_id: int):
+    """
+    Асинхронно добавляет товар в корзину пользователя.
+    Если товар уже есть, увеличивает его количество.
+    """
+    async with sq.connect('shop.db') as db:
+        cursor = await db.cursor()
 
+        # Сначала получаем id пользователя из таблицы users по его telegram_id
+        await cursor.execute(
+            "SELECT id FROM users WHERE telegram_id = ?",
+            (user_telegram_id,)
+        )
+        user_db_in_row = await cursor.fetchone()
+        if not user_db_in_row:
+            print(f"Пользователь с telegram_id {user_telegram_id} не найден в базе данных")
+            return
+        
+        user_db_id = user_db_in_row[0]
+        
+        #  Проверяем, есть ли уже такой товар в корзине у этого пользователя
+        await cursor.execute(
+            "SELECT quantity FROM cart WHERE user_id = ? AND product_id = ?",
+            (user_db_id, product_id)
+        )
+        result = await cursor.fetchone()
+
+        if result:
+            # Если товар есть, увеличиваем количество
+            new_quantity = result[0] + 1
+            await cursor.execute(
+                "UPDATE cart SET quantity = ? WHERE user_id = ? AND product_id = ?",
+                (new_quantity, user_db_id, product_id)
+            )
+            print(f"Количество товара {product_id} для пользователя {user_db_id} обновлено до {new_quantity}.")
+        else:
+            # Если товара нет, добавляем новую запись
+            await cursor.execute(
+                "INSERT INTO cart (user_id, product_id, quantity) VALUES (?, ?, 1)",
+                (user_db_id, product_id)
+            )
+            print(f"Товар {product_id} добавлен в корзину для пользователя {user_db_id}.")
+
+        await db.commit()
